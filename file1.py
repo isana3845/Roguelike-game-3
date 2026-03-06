@@ -4,7 +4,7 @@ import os
 from file import Vector2
 
 
-map_width = 10
+map_width = 20
 map_height = 10
 
 class Map:
@@ -16,7 +16,7 @@ class Map:
         mapa = []
         for i in range(self.height):
             mapa.append(["." for j in range(self.width)])
-
+            
         try:
             mapa[player.y()][player.x()] = "@"
         except IndexError:
