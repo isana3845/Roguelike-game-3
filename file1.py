@@ -71,15 +71,8 @@ ilya = Player(Vector2(1, 5), 10**(-5), 10**9, 9)
 kirill = Enemy(Vector2(4, 2), 10**9 + 1, 4, 9)
 
 while True:
-    if keyboard.is_pressed("w"):
-        ilya.move(Vector2.up(1))
-    elif keyboard.is_pressed("s"):
-        ilya.move(Vector2.up())
-    elif keyboard.is_pressed("d"):
-        ilya.move(Vector2.right())
-    elif keyboard.is_pressed("a"):
-        ilya.move(Vector2.right(-1))
-    elif keyboard.is_pressed("esc"):
+    ilya.move(Vector2(keyboard.is_pressed("d") * 1 + keyboard.is_pressed("a")*(-1), keyboard.is_pressed("w") * (-1) + keyboard.is_pressed("s")*1))
+    if keyboard.is_pressed("esc"):
         break
     m.draw_map(ilya, [kirill])
     time.sleep(0.5)
