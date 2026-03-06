@@ -1,0 +1,55 @@
+def trans(rows, columns, matrix):
+    a = []
+    ro = []
+    for column in range(columns):
+        for row in range(rows):
+            ro.append(matrix[row][column])
+        a.append(ro)
+        ro = []
+    return a
+
+n, m, k = list(map(int, input().split()))
+
+matrix = []
+
+reverse_list = lambda arr: arr[::-1]
+
+for i in range(n):
+    matrix.append(input().split())
+
+if k >= 0:
+    k %= 4
+    for i in range(k):
+        matrix = list(map(reverse_list, trans(n, m, matrix)))
+        n, m = m, n
+else:
+    k = -(abs(k)%4)
+    for i in range(-1*k):
+        matrix = trans(n, m, matrix)[::-1]
+        n, m = m, n
+
+for i in matrix:
+    print(" ".join(i))
+
+
+
+
+
+with open("input.txt", "r") as f, open("output.txt", "w") as w:
+    amount_of_files = int(f.readline())
+    filenames = {}
+    output = []
+
+    for iter in range(amount_of_files):
+        filename = f.readline().strip("\n")
+        if filename.lower() not in filenames:
+            filenames[filename.lower()] = 1
+            output.append(filename)
+        else:
+            while f"{filename.lower()}{filenames[filename.lower()]}" in filenames:
+                filenames[filename.lower()] += 1
+            filenames[f"{filename.lower()}{filenames[filename.lower()]}"] = 1
+            output.append(f"{filename}{filenames[filename.lower()]}")
+
+    
+    w.write("\n".join(output))
