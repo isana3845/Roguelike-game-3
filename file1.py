@@ -16,7 +16,7 @@ class Map:
         mapa = []
         for i in range(self.height):
             mapa.append(["." for j in range(self.width)])
-            
+
         try:
             mapa[player.y()][player.x()] = "@"
         except IndexError:
@@ -59,22 +59,34 @@ class Player:
         return coords == self.position
 
 class Enemy(Player):
+    __slots__ = ("coords", "health", "strength", "speed")
     def __init__(self, coords, health, strength, speed):
         super().__init__(coords, health, strength, speed)
     
-
 m = Map(height=map_height, width=map_width)
-
-
 
 ilya = Player(Vector2(1, 5), 10**(-5), 10**9, 9)
 kirill = Enemy(Vector2(4, 2), 10**9 + 1, 4, 9)
 
 while True:
     ilya.move(Vector2(keyboard.is_pressed("d") * 1 + keyboard.is_pressed("a")*(-1), keyboard.is_pressed("w") * (-1) + keyboard.is_pressed("s")*1))
+    attack = keyboard.is_pressed("e")
+
+    if attack and abs(ilya.position - kirill.position) <= 2**0.5:
+        ilya.attack(kirill)
+        if kirill.health <= 0:
+            del kirill
+
     if keyboard.is_pressed("esc"):
         break
-    m.draw_map(ilya, [kirill])
-    time.sleep(0.5)
+    try:
+        m.draw_map(ilya, [kirill])
+        print(f"\nИлья: {ilya.health} HP | Кирилл: {kirill.health} HP")
+    except Exception:
+        m.draw_map(ilya, [])
+        print(f"\nИлья: {ilya.health} HP")
+    
+    
+    time.sleep(0.2)
     os.system("cls")
 
