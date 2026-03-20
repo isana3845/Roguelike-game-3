@@ -1,3 +1,5 @@
+import sqlite3
+import os #👀
 import keyboard
 import time
 
@@ -44,3 +46,28 @@ class Vector2:
 
     def __abs__(self):
         return (self.x**2 + self.y**2)**0.5
+    
+
+class Database:
+    def __init__(self, db_name, changes: tuple):
+        self.db_name = db_name
+        self.changes = changes
+
+    @staticmethod
+    def get_data(self):
+        ...
+
+    def __enter__(self):
+        self.conn = sqlite3.connect(self.db_name)
+        cursor = self.conn.cursor()
+        
+        cursor.execute("CREATE TABLE IF NOT EXISTS save(level, hp, armor, coords)")
+        
+        cursor.execute("INSERT INTO save VALUES(?, ?, ?, ?)", self.changes)
+        
+        self.conn.commit()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.conn.close()
+        print("Соединение закрыто")
