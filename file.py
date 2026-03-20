@@ -1,3 +1,5 @@
+import sqlite3
+import os #👀
 import keyboard
 import time
 
@@ -21,14 +23,6 @@ class Vector2:
 
     def __repr__(self):
         return f"X: {self.x} Y: {self.y}"
-    
-    @staticmethod
-    def up(direction = -1):
-        return Vector2(0, -1*direction)
-
-    @staticmethod
-    def right(direction = 1):
-        return Vector2(1*direction, 0)
 
     def __eq__(self, value):
         return self.x == value.x and self.y == value.y
@@ -44,3 +38,19 @@ class Vector2:
 
     def __abs__(self):
         return (self.x**2 + self.y**2)**0.5
+    
+
+class Database:
+    def __init__(self, db_name):
+        self.db_name = db_name
+
+    def __enter__(self):
+        self.conn = sqlite3.connect(self.db_name)
+        cursor = self.conn.cursor()
+        return cursor
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is None:
+            self.conn.commit()
+        self.conn.close()
+        print("Соединение закрыто")
