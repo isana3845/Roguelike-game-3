@@ -6,79 +6,148 @@ import os
 
 
 class Map:
-    def __init__(self, height=13, width=40):
-        self.height = height
-        self.width = width
+    def __init__(self, room_height=9, room_width=20):
+        self.room_height = room_height
+        self.room_width = room_width
         self.tiles = ['\033[90m#\033[0m', '\033[92m.\033[0m', '\033[92m.\033[0m', '\033[92m.\033[0m', '\033[94m~\033[0m']
-        self.not_walkable_tiles = ['\033[90m#\033[0m', '#']
-        self.original_map = None
+        self.not_walkable_tiles = ['\033[90m#\033[0m', '┌', '─', '┐', '│', '└', '┘']
+        
 
-    def generate_map(self):
-        game_map = []
+    def generate_room(self):
+        room = []
 
-        for y in range(self.height):
+        for y in range(self.room_height):
             row = []
-            for x in range(self.width):
-                if y == 0 or y == self.height - 1 or x == 0 or x == self.width - 1:
-                    row.append('#')
+            for x in range(self.room_width):
+                if y == 0:
+                    if x == 0:
+                        row.append('┌')
+                    elif x == self.room_width - 1:
+                        row.append('┐')
+                    else:
+                        row.append('─')
+                elif y == self.room_height - 1:
+                    if x == 0:
+                        row.append('└')
+                    elif x == self.room_width - 1:
+                        row.append('┘')
+                    else:
+                        row.append('─')
+                elif x == 0 or x == self.room_width - 1:
+                    row.append('│')
                 else:
                     row.append(choice(self.tiles))
-            game_map.append(row)
+            room.append(row)
 
-        self.original_map = [row.copy() for row in game_map]
+        self.original_map = [row.copy() for row in room]
 
-        return game_map
+        return room
     
 
-    def set_player(self, game_map, player: Player):
-        for y in range(self.height):
-            for x in range(self.width):
-                if game_map[y][x] == '\033[93m@\033[0m':
-                    game_map[y][x] = self.original_map[y][x]
+    def generate_global_map(self):
+        rooms = []
 
-        game_map[player.position.y][player.position.x] = '\033[93m@\033[0m'
+        for y in range(3):
+            row = []
+            for x in range(3):
+                room = self.generate_room()
+                center_x = self.room_width // 2
+                center_y = self.room_height // 2
 
-        return game_map
+                if y < 2:
+                    room[self.room_height - 1][center_x] = ' '
+                if y > 0:
+                    room[0][center_x] = ' '
+                if x < 2:
+                    room[center_y][self.room_width - 1] = ' '
+                if x > 0:
+                    room[center_y][0] = ' '
+
+                row.append(room)
+            rooms.append(row)
+
+        return rooms
     
 
-    def is_walkable(self, game_map, position: Vector2) -> bool:
-        return game_map[position.y][position.x] not in self.not_walkable_tiles
+    def is_walkable(self, position: Vector2, rooms) -> bool:
+        room_x = position.x // self.room_width
+        room_y = position.y // self.room_height
+        local_x = position.x % self.room_width
+        local_y = position.y % self.room_height
+
+        if room_x < 0 or room_x >= 3 or room_y < 0 or room_y >= 3:
+            return False
+        
+        return rooms[room_y][room_x][local_y][local_x] not in self.not_walkable_tiles
 
     
-    def draw_map(self, game_map):
-        for row in game_map:
-            print("".join(row))
+    def draw_map(self, player: Player, rooms):
+        room_x = player.position.x // self.room_width  # Координаты комнаты на карте
+        room_y = player.position.y // self.room_height
+        local_x = player.position.x % self.room_width  # Координаты игрока в комнате
+        local_y = player.position.y % self.room_height
+
+        for room_row in range(3):
+            for y in range(self.room_height):
+                line = []
+
+                for room_column in range(3):
+                    room = rooms[room_row][room_column]
+
+                    if (room_row == room_y and room_column == room_x and y == local_y):
+                        row = list(room[y])
+                        row[local_x] = '\033[93m@\033[0m'
+                        line.append(''.join(row))
+                    else:
+                        line.append(''.join(room[y]))
+
+                    if room_column < 2:
+                        line.append('  ')
+
+                print(''.join(line))
+
+            if room_row < 2:
+                separator = []
+                for room_col in range(3):
+                    separator.append(' ' * self.room_width)
+                    if room_col < 2:
+                        separator.append('   ')
+                print(''.join(separator))
 
 
-player = Player(Vector2(1, 1), 10, 2)
 game_map = Map()
-mapa = game_map.generate_map()
-game_map.set_player(mapa, player)
-game_map.draw_map(mapa)
+rooms = game_map.generate_global_map()
+
+player = Player(Vector2(0, 0), 10, 2)
+player.position.x = 0 * game_map.room_width + game_map.room_width // 2
+player.position.y = 0 * game_map.room_height + game_map.room_height // 2
 
 while True:
+    os.system("cls")
+    game_map.draw_map(player, rooms)
     event = keyboard.read_event()
-
-    if event.event_type == keyboard.KEY_UP:
+    
+    if event.event_type == keyboard.KEY_DOWN:
         match event.name:
             case 'w':
-                if game_map.is_walkable(mapa, player.position + Vector2(0, -1)):
+                new_x = player.position.x
+                new_y = player.position.y - 1
+                if game_map.is_walkable(player.position + Vector2(0, -1), rooms):
                     player.move(Vector2(0, -1))
-            case 'a':
-                if game_map.is_walkable(mapa, player.position + Vector2(-1, 0)):
-                    player.move(Vector2(-1, 0))
             case 's':
-                if game_map.is_walkable(mapa, player.position + Vector2(0, 1)):
+                new_x = player.position.x
+                new_y = player.position.y + 1
+                if game_map.is_walkable(player.position + Vector2(0, 1), rooms):
                     player.move(Vector2(0, 1))
+            case 'a':
+                new_x = player.position.x - 1
+                new_y = player.position.y
+                if game_map.is_walkable(player.position + Vector2(-1, 0), rooms):
+                    player.move(Vector2(-1, 0))
             case 'd':
-                if game_map.is_walkable(mapa, player.position + Vector2(1, 0)):
+                new_x = player.position.x + 1
+                new_y = player.position.y
+                if game_map.is_walkable(player.position + Vector2(1, 0), rooms):
                     player.move(Vector2(1, 0))
             case 'esc':
                 break
-    else:
-        continue
-    
-    
-    os.system("cls")
-    game_map.set_player(mapa, player)
-    game_map.draw_map(mapa)
