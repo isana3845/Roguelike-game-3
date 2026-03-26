@@ -6,9 +6,11 @@ import os
 
 
 class Map:
-    def __init__(self, room_height=9, room_width=20):
+    def __init__(self, room_height=9, room_width=20, map_height=3, map_width=3):
         self.room_height = room_height
         self.room_width = room_width
+        self.map_height = map_height
+        self.map_width = map_width
         self.tiles = ['\033[90m#\033[0m', '\033[92m.\033[0m', '\033[92m.\033[0m', '\033[92m.\033[0m', '\033[94m~\033[0m']
         self.not_walkable_tiles = ['\033[90m#\033[0m', '┌', '─', '┐', '│', '└', '┘']
         
@@ -39,17 +41,15 @@ class Map:
                     row.append(choice(self.tiles))
             room.append(row)
 
-        self.original_map = [row.copy() for row in room]
-
         return room
     
 
     def generate_global_map(self):
         rooms = []
 
-        for y in range(3):
+        for y in range(self.map_height):
             row = []
-            for x in range(3):
+            for x in range(self.map_width):
                 room = self.generate_room()
                 center_x = self.room_width // 2
                 center_y = self.room_height // 2
@@ -92,11 +92,11 @@ class Map:
         local_x = player.position.x % self.room_width  # Координаты игрока в комнате
         local_y = player.position.y % self.room_height
 
-        for room_row in range(3):
+        for room_row in range(self.map_height):
             for y in range(self.room_height):
                 line = []
 
-                for room_column in range(3):
+                for room_column in range(self.map_width):
                     room = rooms[room_row][room_column]
 
                     if (room_row == room_y and room_column == room_x and y == local_y):
@@ -113,14 +113,14 @@ class Map:
 
             if room_row < 2:
                 separator = []
-                for room_col in range(3):
+                for room_col in range(self.map_width):
                     separator.append(' ' * self.room_width)
                     if room_col < 2:
                         separator.append('   ')
                 print(''.join(separator))
 
 
-game_map = Map()
+game_map = Map(map_height=3, map_width=3)
 rooms = game_map.generate_global_map()
 
 player = Player(Vector2(0, 0), 10, 2)
@@ -134,23 +134,15 @@ while True:
     if event.event_type == keyboard.KEY_DOWN:
         match event.name:
             case 'w':
-                new_x = player.position.x
-                new_y = player.position.y - 1
                 if game_map.is_walkable(player.position + Vector2(0, -1), rooms):
                     player.move(Vector2(0, -1))
             case 's':
-                new_x = player.position.x
-                new_y = player.position.y + 1
                 if game_map.is_walkable(player.position + Vector2(0, 1), rooms):
                     player.move(Vector2(0, 1))
             case 'a':
-                new_x = player.position.x - 1
-                new_y = player.position.y
                 if game_map.is_walkable(player.position + Vector2(-1, 0), rooms):
                     player.move(Vector2(-1, 0))
             case 'd':
-                new_x = player.position.x + 1
-                new_y = player.position.y
                 if game_map.is_walkable(player.position + Vector2(1, 0), rooms):
                     player.move(Vector2(1, 0))
             case 'esc':
