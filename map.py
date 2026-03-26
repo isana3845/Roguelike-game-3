@@ -79,6 +79,11 @@ class Map:
             return False
         
         return rooms[room_y][room_x][local_y][local_x] not in self.not_walkable_tiles
+    
+
+    def set_player(self, player: Player, room_x: int, room_y: int):
+        player.position.x = room_x * self.room_width + self.room_width // 2
+        player.position.y = room_y * self.room_height + self.room_height // 2
 
     
     def draw_map(self, player: Player, rooms):
@@ -119,8 +124,7 @@ game_map = Map()
 rooms = game_map.generate_global_map()
 
 player = Player(Vector2(0, 0), 10, 2)
-player.position.x = 0 * game_map.room_width + game_map.room_width // 2
-player.position.y = 0 * game_map.room_height + game_map.room_height // 2
+game_map.set_player(player, 0, 0)
 
 while True:
     os.system("cls")
