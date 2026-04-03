@@ -4,6 +4,7 @@ import keyboard
 import time
 
 
+
 class Vector2:
     __slots__ = ('x', 'y')
 
