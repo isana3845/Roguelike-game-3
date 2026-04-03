@@ -12,13 +12,13 @@ class Map:
         self.map_height = map_height
         self.map_width = map_width
         self.map = {}
-        self.tiles = ['\033[92m \033[0m', '\033[92m \033[0m', '\033[92m \033[0m', '\033[94m~\033[0m']
+        self.tiles = ['\033[90mΩ\033[0m', '\033[92m.\033[0m', '\033[92m.\033[0m', '\033[92m.\033[0m', '\033[94m~\033[0m']
         self.not_walkable_tiles = ['┌', '─', '┐', '│', '└', '┘']
         
 
     def generate_room(self):
         room = []
-
+        
         for y in range(self.room_height):
             row = []
             for x in range(self.room_width):
@@ -62,17 +62,16 @@ class Map:
 
         for i in self.map:
             route = choice(list(self.map[i]))
-            if any([len(list(self.map[i])) == 2, len(list(self.map[route])) == 2]):
+            if any([len(list(self.map[i])) - 1 == 1, len(list(self.map[route])) - 1 == 1]):
                 continue
             self.map[i].remove(route)
             self.map[route].remove(i)
-        print(self.map)
 
     def generate_global_map(self):
         rooms = []
         self.generate_map()
         shtuka = self.map
-        input()
+
         for y in range(self.map_height):
             row = []
             for x in range(self.map_width):
@@ -132,7 +131,7 @@ class Map:
 
                     if (room_row == room_y and room_column == room_x and y == local_y):
                         row = list(room[y])
-                        row[local_x] = '\033[93m@\033[0m'
+                        row[local_x] = '\033[93m☺\033[0m'
                         line.append(''.join(row))
                     else:
                         line.append(''.join(room[y]))
