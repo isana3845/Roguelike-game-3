@@ -12,7 +12,7 @@ class Map:
         self.map_height = map_height
         self.map_width = map_width
         self.map = {}
-        self.tiles = ['\033[90mΩ\033[0m', '\033[92m.\033[0m', '\033[92m.\033[0m', '\033[92m.\033[0m', '\033[94m~\033[0m']
+        self.tiles = ['\033[90mΩ\033[0m', '\033[92m.\033[0m', '\033[92m.\033[0m', '\033[92m.\033[0m', '\033[94m◦\033[0m']
         self.not_walkable_tiles = ['┌', '─', '┐', '│', '└', '┘']
         
 
@@ -83,14 +83,14 @@ class Map:
                 for i in shtuka[room_order]:
                     if abs(room_order - i) == 1:
                         if i > room_order:
-                            room[center_y][self.room_width - 1] = ' '
+                            room[center_y][self.room_width - 1] = '■'
                         else:
-                            room[center_y][0] = ' '
+                            room[center_y][0] = '■'
                     elif abs(room_order - i) == self.map_width:
                         if i > room_order:
-                            room[self.room_height - 1][center_x] = ' '
+                            room[self.room_height - 1][center_x] = '█'
                         else:
-                            room[0][center_x] = ' '
+                            room[0][center_x] = '█'
                     
 
                 row.append(room)
@@ -137,20 +137,14 @@ class Map:
                         line.append(''.join(room[y]))
 
                     if room_column < 2:
-                        line.append('  ')
-
+                        line.append('')
+                print(" "*int(self.room_width*0.5), end = "")
                 print(''.join(line))
 
-            if room_row < 2:
-                separator = []
-                for room_col in range(self.map_width):
-                    separator.append(' ' * self.room_width)
-                    if room_col < 2:
-                        separator.append('   ')
-                print(''.join(separator))
+            
 
 
-game_map = Map(map_height=4, map_width=4)
+game_map = Map(map_height=5, map_width=5)
 rooms = game_map.generate_global_map()
 
 player = Player(Vector2(0, 0), 10, 2)
