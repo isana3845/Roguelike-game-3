@@ -16,10 +16,15 @@ class Interface:
     def __call__(self):
         print(f"HP: {self.player.health} Armor: {self.player.armor}")
 
+
+#this is for you :3 TODO
+
 class Enemy(Player):
     def __init__(self, coords, health, armor, type):
         super().__init__(coords, health, armor)
         self.type = type
+    
+    
 
 
 class Inventory:
