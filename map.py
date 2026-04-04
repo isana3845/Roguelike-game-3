@@ -1,8 +1,13 @@
-from random import choice
-from file1 import Player
+from random import choice, shuffle
+from file1 import Player, Inventory, Interface, Item
 from file import Vector2
 import keyboard
 import os
+
+l = []
+with open("settings.txt", "r") as f:
+    for i in f.readlines():
+        l += list(map(int, i.split()))
 
 
 class Map:
@@ -60,12 +65,20 @@ class Map:
                 self.map[i].add(i + 1)
                 self.map[i + 1].add(i)
 
+        edges = []
         for i in self.map:
-            route = choice(list(self.map[i]))
-            if any([len(list(self.map[i])) - 1 == 1, len(list(self.map[route])) - 1 == 1]):
-                continue
-            self.map[i].remove(route)
-            self.map[route].remove(i)
+            for j in self.map[i]:
+                if i < j:
+                    edges.append((i, j))
+
+        shuffle(edges)
+
+        # Удаляем только те рёбра, которые не создают острова
+        # (оставляем хотя бы 2 связи у каждой вершины, кроме угловых)
+        for i, j in edges:
+            if len(self.map[i]) > 2 and len(self.map[j]) > 2:
+                self.map[i].remove(j)
+                self.map[j].remove(i)
 
     def generate_global_map(self):
         rooms = []
@@ -91,8 +104,6 @@ class Map:
                             room[self.room_height - 1][center_x] = '█'
                         else:
                             room[0][center_x] = '█'
-                    
-
                 row.append(room)
             rooms.append(row)
 
@@ -138,21 +149,25 @@ class Map:
 
                     if room_column < 2:
                         line.append('')
-                print(" "*int(self.room_width*0.5), end = "")
                 print(''.join(line))
 
             
 
+inventory = Inventory()
+inventory.add_item(Item("sword", "Weapon", 5), Item("apple", "Healing", 10))
 
-game_map = Map(map_height=5, map_width=5)
+game_map = Map(map_height=l[1], map_width=l[0], room_width = l[2], room_height=l[3])
 rooms = game_map.generate_global_map()
 
 player = Player(Vector2(0, 0), 10, 2)
+interface = Interface(player)
 game_map.set_player(player, 0, 0)
 
 while True:
     os.system("cls")
     game_map.draw_map(player, rooms)
+    inventory()
+    interface()
     event = keyboard.read_event()
     
     if event.event_type == keyboard.KEY_DOWN:
@@ -169,6 +184,17 @@ while True:
             case 'd':
                 if game_map.is_walkable(player.position + Vector2(1, 0), rooms):
                     player.move(Vector2(1, 0))
+            
+            case 'i':
+                while True:
+                    os.system("cls")
+                    inventory()
+                    event = keyboard.read_event()
+                    if event.event_type == keyboard.KEY_DOWN:
+                        if event.name == "esc":
+                            break
+                        inventory.action(event.name)
+
             case 'esc':
                 break
 
