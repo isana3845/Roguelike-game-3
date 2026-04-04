@@ -14,9 +14,10 @@ class Map:
         self.visited_rooms = {}
         self.tiles = ['\033[90mΩ\033[0m', '\033[92m.\033[0m', '\033[92m.\033[0m', '\033[92m.\033[0m', '\033[94m◦\033[0m']
         self.not_walkable_tiles = ['┌', '─', '┐', '│', '└', '┘']
+        self.exit_tile = '\033[35m🁫\033[0m'
         
 
-    def generate_room(self):
+    def generate_room(self, is_exit=False):
         room = []
         
         for y in range(self.room_height):
@@ -41,6 +42,11 @@ class Map:
                 else:
                     row.append(choice(self.tiles))
             room.append(row)
+
+        if is_exit:
+            exit_x = randint(1, self.room_width - 2)
+            exit_y = randint(1, self.room_height - 2)
+            room[exit_y][exit_x] = self.exit_tile
 
         return room
     
@@ -75,7 +81,7 @@ class Map:
                 self.map[b].add(a)
 
 
-    def generate_global_map(self):
+    def generate_global_map(self, exit_x=None, exit_y=None):
         rooms = []
         self.generate_map()
         shtuka = self.map
@@ -83,10 +89,11 @@ class Map:
         for y in range(self.map_height):
             row = []
             for x in range(self.map_width):
-                room = self.generate_room()
+                has_exit = (x == exit_x and y == exit_y) if exit_x is not None else False
+                room = self.generate_room(is_exit=has_exit)
                 center_x = self.room_width // 2
                 center_y = self.room_height // 2
-                room_order = y*self.map_width + x + 1
+                room_order = y * self.map_width + x + 1
 
                 for i in shtuka[room_order]:
                     if abs(room_order - i) == 1:
@@ -117,6 +124,16 @@ class Map:
             return False
         
         return rooms[room_y][room_x][local_y][local_x] not in self.not_walkable_tiles
+    
+
+    def is_exit(self, position: Vector2, rooms) -> bool:
+        room_x = position.x // self.room_width
+        room_y = position.y // self.room_height
+        local_x = position.x % self.room_width
+        local_y = position.y % self.room_height
+
+        
+        return rooms[room_y][room_x][local_y][local_x] == self.exit_tile
     
 
     def set_player(self, player: Player, room_x: int, room_y: int):
@@ -169,17 +186,48 @@ class Map:
 
 
 
-game_map = Map(map_height=5, map_width=4)
-rooms = game_map.generate_global_map()
+game_map = Map(map_height=randint(3, 5), map_width=randint(2, 4))
 
+start_x = randint(0, game_map.map_width - 1)
+start_y = randint(0, game_map.map_height - 1)
+exit_x = randint(0, game_map.map_width - 1)
+exit_y = randint(0, game_map.map_height - 1)
+
+while exit_x == start_x and exit_y == start_y:
+    exit_x = randint(0, game_map.map_width - 1)
+    exit_y = randint(0, game_map.map_height - 1)
+
+rooms = game_map.generate_global_map(exit_x, exit_y)
 player = Player(Vector2(0, 0), 20, 20, 2, 10)
 interface = Interface(player)
-game_map.set_player(player, randint(0, game_map.map_width - 1), randint(0, game_map.map_height - 1))
+game_map.set_player(player, start_x, start_y)
 
 
 while True:
     os.system("cls")
     game_map.draw_map(player, rooms, interface)
+
+    if game_map.is_exit(player.position, rooms):
+        os.system("cls")
+        interface.add_event("Вы перешли на следующий уровень!")
+        interface.level += 1
+        game_map = Map(map_height=randint(3, 5), map_width=randint(2, 4))
+
+        start_x = randint(0, game_map.map_width - 1)
+        start_y = randint(0, game_map.map_height - 1)
+        exit_x = randint(0, game_map.map_width - 1)
+        exit_y = randint(0, game_map.map_height - 1)
+
+        while exit_x == start_x and exit_y == start_y:
+            exit_x = randint(0, game_map.map_width - 1)
+            exit_y = randint(0, game_map.map_height - 1)
+
+        rooms = game_map.generate_global_map(exit_x, exit_y)
+        game_map.visited_rooms.clear()
+        game_map.set_player(player, start_x, start_y)
+
+        continue
+
     event = keyboard.read_event()
     
     if event.event_type == keyboard.KEY_DOWN:

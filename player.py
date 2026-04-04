@@ -54,29 +54,27 @@ class Player:
         self.position += direction
 
 
-
 class Enemy(Player):
     def __init__(self, coords, health, armor):
         super().__init__(coords, health, armor)
 
 
 class Interface:
-    def __init__(self, player: Player):
+    def __init__(self, player: Player, current_level=1):
         self.player = player
         self.width = 50
-        self.height = 20
+        self.height = 15
+        self.level = current_level
+        self.event_log = []
+        self.max_events = 15
 
 
-    # def __call__(self):
-    #     hp_color = '\033[91m' if self.player.health < (self.player.health * 0.4) else '\033[92m'
-    #     armor_color = '\033[94m'
-    #     reset = '\033[0m'
-        
-    #     hp_bar = f"{hp_color}{'█' * self.player.health}{'░' * (10 - self.player.health)}{reset}"
-    #     armor_bar = f"{armor_color}{'█' * self.player.armor}{'░' * (10 - self.player.armor)}{reset}"
-        
-    #     print(f"\r{hp_bar} ❤️  {armor_bar} 🛡️  ({self.player.position.x},{self.player.position.y})", end="")
+    def add_event(self, event_text: str):
+        self.event_log.append(event_text)
 
+        if len(self.event_log) > self.max_events:
+            self.event_log.pop(0)
+    
 
     def get_lines(self):
         lines = []
@@ -97,35 +95,22 @@ class Interface:
         lines.append(f"│ {armor_text:<{self.width - 4}} │")
         lines.append(f"│ {armor_bar:<{self.width + 5}} │")
 
-        lines.append(f"│ {"🎮  LEVEL: ":<{self.width - 5}} │")
+        lines.append(f"│ {f"🎮  LEVEL: {self.level}":<{self.width - 5}} │")
 
         lines.append(f"├{'─' * (self.width - 2)}┤")
         lines.append(f"│{"Журнал собыйтий":^{self.width - 2}}│")
         lines.append(f"├{'─' * (self.width - 2)}┤")
 
-        for _ in range(self.height):    # Ну вроде заглушка
-            lines.append(f"│{' ' * (self.width - 2)}│")
+        for i in range(self.height):
+            if i < len(self.event_log):
+                event = self.event_log[-(self.height - i)] if len(self.event_log) > self.height - i else self.event_log[i]
+
+                if len(event) > self.width - 4:
+                    event = event[:self.width - 7] + "..."
+                lines.append(f"│ {event:<{self.width - 3}}│")
+            else:
+                lines.append(f"│{' ' * (self.width - 2)}│")
 
         lines.append(f"└{'─' * (self.width - 2)}┘")
 
         return lines
-
-
-
-# class Inventory:
-#     def __init__(self, capacity: int):
-#         self.capacity = capacity
-#         self.items = []
-
-
-#     def add(self, item):
-#         self.items.append(item)
-
-
-#     def show(self):
-#         if not self.items:
-#             print("Инвентарь пуст")
-#             return
-        
-#         for i, item in enumerate(self.items, 1):
-#             print(i, item)
