@@ -199,16 +199,17 @@ while exit_x == start_x and exit_y == start_y:
     exit_y = randint(0, game_map.map_height - 1)
 
 rooms = game_map.generate_global_map(exit_x, exit_y)
-player = Player(Vector2(0, 0), 20, 20, 2, 10)
+inventory = Inventory()
+player = Player(Vector2(0, 0), 16, 20, 2, 10, inventory)
+
+
+inventory.add_item(Item("Sword", "weapon", 5), Item("Apple", "healing", 5), Item("Apple", "healing", 5), Item("Apple", "healing", 5), Item("Apple", "healing", 5), Item("Shlyapka", "armor", 5))
 interface = Interface(player)
 game_map.set_player(player, start_x, start_y)
-inventory = Inventory()
-inventory.add_item(Item("Sword", "Weapon", 5), Item("Apple", "Healing", 10))
 
 while True:
     os.system("cls")
     game_map.draw_map(player, rooms, interface)
-    inventory()
 
     if game_map.is_exit(player.position, rooms):
         os.system("cls")
@@ -255,7 +256,7 @@ while True:
                     if event.event_type == keyboard.KEY_DOWN:
                         if event.name == "esc":
                             break
-                        inventory.action(event.name)
+                        player.player_inventory(event.name)
 
             case 'esc':
                 break
