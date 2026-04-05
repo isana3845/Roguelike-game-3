@@ -2,28 +2,73 @@ from file import Vector2
 import keyboard
 import time
 
-l = []
-with open("settings.txt", "r") as f:
-    for i in f.readlines():
-        l += list(map(int, i.split()))
-
 
 class Player:
-    def __init__(self, coords: Vector2, health: int, armor: int):
+    def __init__(self, coords: Vector2, health: int, max_health: int, armor: int, max_armor: int):
         self.position = coords
         self.health = health
+        self.max_health = max_health
+        self.max_armor = max_armor
         self.armor = armor
 
     def move(self, direction: Vector2):
         self.position += direction
 
 class Interface:
-    def __init__(self, player: Player):
+    def __init__(self, player: Player, current_level=1):
         self.player = player
-    def __call__(self):
-        print(f"\033[1;{l[1]*l[2] + 2}HPlayer:")
-        print(f"\033[2;{l[1]*l[2] + 4}HHP: {self.player.health}")
-        print(f"\033[3;{l[1]*l[2] + 4}HArmor: {self.player.armor}")
+        self.width = 50
+        self.height = 15
+        self.level = current_level
+        self.event_log = []
+        self.max_events = 15
+
+
+    def add_event(self, event_text: str):
+        self.event_log.append(event_text)
+
+        if len(self.event_log) > self.max_events:
+            self.event_log.pop(0)
+    
+
+    def get_lines(self):
+        lines = []
+
+        lines.append(f"┌{'─' * (self.width - 2)}┐")
+        lines.append(f"│{"Статус":^{self.width - 2}}│")
+        lines.append(f"├{'─' * (self.width - 2)}┤")
+
+        hp_color = '\033[91m' if self.player.health < (self.player.max_health * 0.4) else '\033[92m'
+        reset = '\033[0m'
+        hp_text = f"❤️  HP: {self.player.health}/{self.player.max_health}"
+        hp_bar = f"{hp_color}{'█' * self.player.health}{'░' * (self.player.max_health - self.player.health)}{reset}"
+        lines.append(f"│ {hp_text:<{self.width - 4}} │")
+        lines.append(f"│ {hp_bar:<{self.width + 5}} │")
+
+        armor_text = f"🛡️  ARMOR: {self.player.armor}/{self.player.max_armor}"
+        armor_bar = f"\033[94m{'█' * self.player.armor}{'░' * (self.player.max_armor - self.player.armor)}\033[0m"
+        lines.append(f"│ {armor_text:<{self.width - 4}} │")
+        lines.append(f"│ {armor_bar:<{self.width + 5}} │")
+
+        lines.append(f"│ {f"🎮  LEVEL: {self.level}":<{self.width - 5}} │")
+
+        lines.append(f"├{'─' * (self.width - 2)}┤")
+        lines.append(f"│{"Журнал собыйтий":^{self.width - 2}}│")
+        lines.append(f"├{'─' * (self.width - 2)}┤")
+
+        for i in range(self.height):
+            if i < len(self.event_log):
+                event = self.event_log[-(self.height - i)] if len(self.event_log) > self.height - i else self.event_log[i]
+
+                if len(event) > self.width - 4:
+                    event = event[:self.width - 7] + "..."
+                lines.append(f"│ {event:<{self.width - 3}}│")
+            else:
+                lines.append(f"│{' ' * (self.width - 2)}│")
+
+        lines.append(f"└{'─' * (self.width - 2)}┘")
+
+        return lines
 
 
 class Item:
@@ -59,12 +104,13 @@ class Inventory:
     def pop_item(self, *items: tuple[Item]):
         try:
             for item in items:
-                self.inv[item.title] -= 1
-                if not self.inv[item.title]:
-                    self.inv.pop(item.title)
+                self.inv[item][1] -= 1
+                if not self.inv[item][1]:
+                    self.inv.pop(item)
         except KeyError:
+            print(self.inv, item)
             print(f"There is no such item as {item}")
-            time.sleep(1)
+            time.sleep(5)
         
     def change_item(self, d = 0):
         if self.order + d not in [-1, len(self.inv)]:
@@ -101,7 +147,7 @@ class Inventory:
         for i, j in enumerate(self.inv):
             if i == self.order:
                 self.chosen_item = j
-                print(f"   \033[7;92m{self.inv[j]}\033[0m", end = " ")
+                print(f"   \033[7;92m{j}: {self.inv[j][1]}\033[0m", end = " ")
             else:
-                print(f"   {self.inv[j]}", end = " ")
+                print(f"   {j}: {self.inv[j][1]}", end = " ")
         print("\n\n   1 - pop item  2 - use item  i - for inventory  esc - to close")
