@@ -97,16 +97,16 @@ class Inventory:
     
     def add_item(self, *items: tuple[Item]):
         for item in items:
-            if item.title not in self.inv:
-                self.inv[item.title] = [item, 0]
-            self.inv[item.title][1] += 1
+            if item.title.lower() not in self.inv:
+                self.inv[item.title.lower()] = [item, 0]
+            self.inv[item.title.lower()][1] += 1
     
     def pop_item(self, *items: tuple[Item]):
         try:
             for item in items:
-                self.inv[item][1] -= 1
-                if not self.inv[item][1]:
-                    self.inv.pop(item)
+                self.inv[item.lower()][1] -= 1
+                if not self.inv[item.lower()][1]:
+                    self.inv.pop(item.lower())
         except KeyError:
             print(self.inv, item)
             print(f"There is no such item as {item}")
