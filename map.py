@@ -179,14 +179,14 @@ class Map:
         max_lines = max(len(map_lines), len(side_lines))
     
         for i in range(max_lines):
-            map_part = map_lines[i] if i < len(map_lines) else ' ' * len(map_lines[0]) if map_lines else ''
+            map_part = map_lines[i] if i < len(map_lines) else ' ' * self.room_width * self.map_width
             side_part = side_lines[i] if i < len(side_lines) else ''
             
             print(f"{map_part}{' ' * self.room_width}{side_part}")
 
 
 
-game_map = Map(map_height=randint(3, 5), map_width=randint(2, 4))
+game_map = Map(map_height=randint(2, 5), map_width=randint(2, 4))
 
 start_x = randint(0, game_map.map_width - 1)
 start_y = randint(0, game_map.map_height - 1)
@@ -211,7 +211,7 @@ while True:
         os.system("cls")
         interface.add_event("Вы перешли на следующий уровень!")
         interface.level += 1
-        game_map = Map(map_height=randint(3, 5), map_width=randint(2, 4))
+        game_map = Map(map_height=randint(2, 5), map_width=randint(2, 4))
 
         start_x = randint(0, game_map.map_width - 1)
         start_y = randint(0, game_map.map_height - 1)
