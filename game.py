@@ -38,7 +38,7 @@ for y in range(game_map.map_height):
         ent = ent[1:]
 
 
-inventory.add_item(Item("Sword", "weapon", 2), Item("Apple", "healing", 5), Item("Shlyapka", "armor", 5), Item("Potion", "invisibility_potion", 20))
+inventory.add_item(Item("Sword", "weapon", 5), Item("Apple", "healing", 5), Item("Shlyapka", "armor", 5), Item("Potion", "invisibility_potion", 20))
 interface = Interface(player)
 game_map.set_player(player, start_x, start_y)
 nearest = None
@@ -49,6 +49,7 @@ player_has_moved = False  # Флаг, что игрок сделал ход
 while True and player.health > 0:
     os.system("cls")
     game_map.draw_map(player, entities, rooms, interface)
+    event = keyboard.read_event()
 
     if game_map.is_exit(player.position, rooms):
         os.system("cls")
@@ -82,7 +83,7 @@ while True and player.health > 0:
         player_has_moved = False  # Сбрасываем флаг
         continue
     
-    event = keyboard.read_event()
+    
     
     if event.event_type == keyboard.KEY_DOWN:
         match event.name:
@@ -118,7 +119,7 @@ while True and player.health > 0:
                     if nearest:
                         print(f"Attacking enemy at distance {min_distance}")
                         player.attack(nearest)
-                        
+                        nearest.attack(player)
                         if nearest.health <= 0:
                             print(f"Enemy died!")
                             entities.remove(nearest)
@@ -126,26 +127,31 @@ while True and player.health > 0:
                         print("No enemies nearby!")
                         time.sleep(1)
                 except Exception as e:
+                    raise ValueError("1111")
                     print(f"Can't attack enemy! {e}")
                     time.sleep(1)
             case 'esc':
+                print(111)
                 break
             
             case 'i':
                 while True:
                     os.system("cls")
                     inventory()
-                    event = keyboard.read_event()
-                    if event.event_type == keyboard.KEY_DOWN:
-                        if event.name == "esc":
-                            break
-                        player.player_inventory(event.name)
-                player_has_moved = False  # Инвентарь не считается ходом
+                    inv_event = keyboard.read_event()
+                    if inv_event.event_type == keyboard.KEY_DOWN:
+                        if inv_event.name == "esc":
+                            break  # Выходим из цикла инвентаря
+                        player.player_inventory(inv_event.name)
+                player_has_moved = False
+            
+            case _:
+                continue
 
             
     
     # Двигаем врагов ТОЛЬКО если игрок сделал ход
-    if player_has_moved:
+    if player_has_moved and not player.invisibility:
         for enemy in entities:
             enemy.move(player, game_map, rooms)
         player_has_moved = False  # Сбрасываем флаг после движения врагов

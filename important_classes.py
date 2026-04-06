@@ -119,16 +119,14 @@ class Player:
                         print("You're about to get overdosed bitch! Chill")
 
                 time.sleep(1)
-            case _:
-                print("Nah...")
                     
             
 
     def attack(self, target):
         weapon_damage = 1  # Базовый урон
         
-        # Проверяем, есть ли оружие в инвентаре
-        if self.inv and self.inv.inv and self.inv.chosen_item < len(self.inv.inv):
+
+        if self.inv and self.inv.inv:
             item = self.inv.inv[self.inv.chosen_item][0]
             if item.ty == "weapon":
                 weapon_damage = int(item.ch)  # Явно преобразуем в int
@@ -139,13 +137,23 @@ class Player:
             print(f"You attack for {weapon_damage} damage!")
         
         # Убеждаемся, что health - это число
-        target.health = int(target.health) - weapon_damage
+        if target.armor > 0:
+            target.armor -= weapon_damage
+            if target.armor < 0:
+                target.armor = 0
+        else:
+            target.health = int(target.health) - weapon_damage
+            if target.health < 0:
+                target.health = 0
         print(f"Enemy health: {target.health}/{target.max_health}")
 
 class Enemy(Player):
     def __init__(self, coords: Vector2, health: int, max_health: int, armor: int, max_armor: int, enemy_type="normal"):
         super().__init__(coords, health, max_health, armor, max_armor)
         self.enemy_type = enemy_type  # Переименуем, чтобы не конфликтовать с type()
+        self.inv = Inventory()
+        self.inv.add_item(Item("Sword", "weapon", 2))
+        self.inv.chosen_item = "sword"
     
     def __repr__(self):
         return f"Enemy(pos={self.position}, hp={self.health}, type={self.enemy_type})"
@@ -197,7 +205,6 @@ class Enemy(Player):
         
         if self.path and len(self.path) > 1:
             if self.path[1] == dest:
-                player.health -= 2
                 return False
             self.position = self.path[1]  # Перемещаемся на первый шаг
             return True
