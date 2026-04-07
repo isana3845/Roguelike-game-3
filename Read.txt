@@ -1,1 +1,1 @@
-Чтобы запустить игру нужны файлы: important_classes vector_database world
+Чтобы запустить игру нужны файлы: important_classes.py vector_database.py world.py game.py
