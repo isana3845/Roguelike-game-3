@@ -1,1 +1,1 @@
-Чтобы запустить игру нужны файлы:
+Чтобы запустить игру нужны файлы: important_classes vector_database world
