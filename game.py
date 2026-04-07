@@ -6,8 +6,10 @@ from vector_database import Vector2
 import keyboard
 import os
 
+map_height = randint(2, 5)
+map_width = randint(2, 4)
 
-game_map = Map(map_height=randint(2, 5), map_width=randint(2, 4))
+game_map = Map(map_height=map_height, map_width=map_height)
 
 start_x = randint(0, game_map.map_width - 1)
 start_y = randint(0, game_map.map_height - 1)
@@ -22,7 +24,7 @@ rooms = game_map.generate_global_map(exit_x, exit_y)
 inventory = Inventory()
 player = Player(Vector2(0, 0), 16, 20, 2, 10, inventory)
 
-entities = [Enemy(Vector2(0, 0), 20, 20, 20, 20), Enemy(Vector2(0, 0), 20, 20, 20, 20), Enemy(Vector2(0, 0), 20, 20, 20, 20)]
+entities = [Enemy(Vector2(0, 0), 20, 20, 2, 20) for i in range(map_height*map_width - 1)]
 
 ent = entities
 
@@ -38,11 +40,11 @@ for y in range(game_map.map_height):
         ent = ent[1:]
 
 
-inventory.add_item(Item("Sword", "weapon", 5), Item("Apple", "healing", 5), Item("Shlyapka", "armor", 5), Item("Potion", "invisibility_potion", 20))
+inventory.add_item(Item("Sword", "weapon", 10), Item("Apple", "healing", 5), Item("Shlyapka", "armor", 5), Item("Potion", "invisibility_potion", 20))
 interface = Interface(player)
 game_map.set_player(player, start_x, start_y)
-nearest = None
 
+nearest = None
 
 player_has_moved = False  # Флаг, что игрок сделал ход
 
@@ -55,13 +57,17 @@ while True and player.health > 0:
         os.system("cls")
         interface.add_event("Вы перешли на следующий уровень!")
         interface.level += 1
-        game_map = Map(map_height=randint(2, 5), map_width=randint(2, 4))
+        map_height = randint(2, 5)
+        map_width = randint(2, 4)
+        game_map = Map(map_height=map_height, map_width=map_width)
+
+        entities = [Enemy(Vector2(0, 0), 20, 20, 2, 20) for i in range(map_height*map_width - 4)]
+        ent = entities
 
         start_x = randint(0, game_map.map_width - 1)
         start_y = randint(0, game_map.map_height - 1)
         exit_x = randint(0, game_map.map_width - 1)
         exit_y = randint(0, game_map.map_height - 1)
-        ent = entities
 
         for y in range(game_map.map_height):
             if not ent:
@@ -71,7 +77,7 @@ while True and player.health > 0:
                     continue
                 if not ent:
                     break
-                game_map.set_player(ent[0], x, y)
+                game_map.set_player(ent[0], x, y, randint(0, 2), randint(0, 2))
                 ent = ent[1:]
         while exit_x == start_x and exit_y == start_y:
             exit_x = randint(0, game_map.map_width - 1)
@@ -118,16 +124,16 @@ while True and player.health > 0:
                     
                     if nearest:
                         print(f"Attacking enemy at distance {min_distance}")
-                        player.attack(nearest)
+                        interface.add_event(player.attack(nearest))
                         nearest.attack(player)
+
                         if nearest.health <= 0:
-                            print(f"Enemy died!")
+                            interface.add_event("Enemy died!")
                             entities.remove(nearest)
                     else:
                         print("No enemies nearby!")
                         time.sleep(1)
                 except Exception as e:
-                    raise ValueError("1111")
                     print(f"Can't attack enemy! {e}")
                     time.sleep(1)
             case 'esc':
@@ -141,19 +147,25 @@ while True and player.health > 0:
                     inv_event = keyboard.read_event()
                     if inv_event.event_type == keyboard.KEY_DOWN:
                         if inv_event.name == "esc":
+                            event = None
                             break  # Выходим из цикла инвентаря
                         player.player_inventory(inv_event.name)
                 player_has_moved = False
             
             case _:
                 continue
-
-            
+                        
     
     # Двигаем врагов ТОЛЬКО если игрок сделал ход
     if player_has_moved and not player.invisibility:
+        occupied = []
         for enemy in entities:
-            enemy.move(player, game_map, rooms)
+            if enemy.position == player.position:
+                enemy.attack(player)
+
+            if abs(enemy.position - player.position) <= min(game_map.room_height, game_map.room_width)/2:
+                enemy.move(player, occupied, game_map, rooms)
+
         player_has_moved = False  # Сбрасываем флаг после движения врагов
             
     

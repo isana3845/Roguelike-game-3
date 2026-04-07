@@ -95,48 +95,53 @@ class Player:
             case "e":
                 item = self.inv.inv[self.inv.chosen_item][0]
                 if item.ty == "weapon":
-                    print(f"You equiped {item.title}")
+                    return f"You equiped {item.title}"
                 elif item.ty == "healing":
                     if self.health < self.max_health:
-                        self.health += item.ch - (self.health + item.ch)%self.max_health
-                        print(f"You restored your health by {item.ch}")
+                        self.health += item.ch
+                        if self.health > self.max_health:
+                            self.health = self.max_health
                         self.inv.pop_item(self.inv.chosen_item)
+                        return f"You restored your health by {item.ch}"
+                    if self.health > self.max_health:
+                        self.health = self.max_health
                     else:
-                        print("You're healthy bitch! Chill")
+                        return "You're healthy bitch! Chill"
                 elif item.ty == "armor":
                     if self.armor < self.max_armor:
                         self.armor += item.ch
-                        print(f"You equiped {self.inv.chosen_item}")
+                        if self.armor > self.max_armor:
+                            self.armor = self.max_armor
                         self.inv.pop_item(self.inv.chosen_item)
+                        return f"You equiped {self.inv.chosen_item}"
                     else:
-                        print("You're helluva armored bitch! Can you chill?")
+                        return "You're helluva armored bitch! Can you chill?"
                 elif item.ty == "invisibility_potion":
                     if not self.invisibility:
                         self.invisibility += item.ch
-                        print(f"You'll become invisible for next {item.ch} moves")
                         self.inv.pop_item(self.inv.chosen_item)
+                        return f"You'll become invisible for next {item.ch} moves"
                     else:
-                        print("You're about to get overdosed bitch! Chill")
-
-                time.sleep(1)
+                        return "You're about to get overdosed bitch! Chill"
+            case _:
+                return "___"
                     
             
 
     def attack(self, target):
         weapon_damage = 1  # Базовый урон
-        
+        message = ""
 
         if self.inv and self.inv.inv:
             item = self.inv.inv[self.inv.chosen_item][0]
             if item.ty == "weapon":
                 weapon_damage = int(item.ch)  # Явно преобразуем в int
-                print(f"You attack with {item.title} for {weapon_damage} damage!")
+                message = f"You attack with {item.title} for {weapon_damage} damage!"
             else:
-                print(f"You attack for {weapon_damage} damage!")
+                message = f"You attack for {weapon_damage} damage!"
         else:
-            print(f"You attack for {weapon_damage} damage!")
+            message = f"You attack for {weapon_damage} damage!"
         
-        # Убеждаемся, что health - это число
         if target.armor > 0:
             target.armor -= weapon_damage
             if target.armor < 0:
@@ -145,13 +150,14 @@ class Player:
             target.health = int(target.health) - weapon_damage
             if target.health < 0:
                 target.health = 0
-        print(f"Enemy health: {target.health}/{target.max_health}")
+        return message
 
 class Enemy(Player):
     def __init__(self, coords: Vector2, health: int, max_health: int, armor: int, max_armor: int, enemy_type="normal"):
         super().__init__(coords, health, max_health, armor, max_armor)
         self.enemy_type = enemy_type  # Переименуем, чтобы не конфликтовать с type()
         self.inv = Inventory()
+        self.path = []
         self.inv.add_item(Item("Sword", "weapon", 2))
         self.inv.chosen_item = "sword"
     
@@ -173,14 +179,15 @@ class Enemy(Player):
 
         # Сортируем направления по приоритету (сначала к цели)
         directions = []
-        if dest.x > curr.x:
-            directions.append(Vector2(1, 0))  # вправо
-        if dest.y > curr.y:
-            directions.append(Vector2(0, 1))  # вниз
-        if dest.x < curr.x:
-            directions.append(Vector2(-1, 0)) # влево
         if dest.y < curr.y:
             directions.append(Vector2(0, -1)) # вверх
+        if dest.y > curr.y:
+            directions.append(Vector2(0, 1))  # вниз
+        if dest.x > curr.x:
+            directions.append(Vector2(1, 0))  # вправо
+        if dest.x < curr.x:
+            directions.append(Vector2(-1, 0)) # влево
+        
         
         # Добавляем остальные направления
         if Vector2(1, 0) not in directions:
@@ -199,14 +206,15 @@ class Enemy(Player):
                 return [curr] + path
         return []
     
-    def move(self, player: Player, map_object, rooms):
+    def move(self, player: Player, occipied, map_object, rooms):
         dest = player.position
         self.path = self.find_path(self.position, dest, [], map_object, rooms)
         
         if self.path and len(self.path) > 1:
-            if self.path[1] == dest:
+            if self.path[1] == dest or self.path[1] in occipied:
                 return False
             self.position = self.path[1]  # Перемещаемся на первый шаг
+            occipied.append(self.position)
             return True
         return False
 
