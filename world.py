@@ -142,9 +142,9 @@ class Map:
         return rooms[room_y][room_x][local_y][local_x] == self.exit_tile
     
 
-    def set_player(self, player: Player, room_x: int, room_y: int):
-        player.position.x = room_x * self.room_width + self.room_width // 2
-        player.position.y = room_y * self.room_height + self.room_height // 2
+    def set_player(self, player: Player, room_x: int, room_y: int, x_offset = 0, y_offset = 0):
+        player.position.x = room_x * self.room_width + self.room_width // 2 + x_offset % self.room_width
+        player.position.y = room_y * self.room_height + self.room_height // 2 - y_offset % self.room_height
 
     
     def draw_map(self, player: Player, entities: list, rooms, interface: Interface):
