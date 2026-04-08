@@ -38,6 +38,7 @@ ent = entities
 placed_items = []  # Список для размещенных предметов
 item_list = copy.deepcopy(items)
 
+
 # Размещаем врагов и предметы
 for y in range(game_map.map_height):
     for x in range(game_map.map_width):
