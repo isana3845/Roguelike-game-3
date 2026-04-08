@@ -62,7 +62,7 @@ for y in range(game_map.map_height):
 items = placed_items
 
 
-inventory.add_item(Item("Sword", "weapon", 10), Item("Apple", "healing", 5), Item("Shlyapka", "armor", 5), Item("Potion", "invisibility_potion", 200))
+inventory.add_item(Item("Sword", "weapon", 5), Item("Apple", "healing", 5), Item("Shlyapka", "armor", 5), Item("Potion", "invisibility_potion", 10))
 interface = Interface(player)
 game_map.set_entity(player, start_x, start_y)
 
