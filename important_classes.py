@@ -3,10 +3,12 @@ import keyboard
 import time
 
 class Item:
-    def __init__(self, title, ty, ch):
+    def __init__(self, title, ty, ch, icon = "^", coords: Vector2 = Vector2(0, 0)):
         self.title = title
         self.ty = ty
         self.ch = ch
+        self.position = coords
+        self.icon = icon
     
     def __repr__(self):
         return f"{self.title}: {self.ty}, {self.ch}"
