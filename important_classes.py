@@ -63,7 +63,7 @@ class Inventory:
                 case "armor":
                     print(f"Gives you {item.ch} armor")
                 case _:
-                    print("i dunno...")
+                    print("something misterious...")
         except KeyError:
             print("Cant access any item!")
         print("\n\nx - destroy item  e - use item  i - for inventory  esc - to close")
@@ -106,7 +106,7 @@ class Player:
                     if self.health > self.max_health:
                         self.health = self.max_health
                     else:
-                        return "You're healthy bitch! Chill"
+                        return "You're healthy! Chill"
                 elif item.ty == "armor":
                     if self.armor < self.max_armor:
                         self.armor += item.ch
@@ -115,14 +115,14 @@ class Player:
                         self.inv.pop_item(self.inv.chosen_item)
                         return f"You equiped {self.inv.chosen_item}"
                     else:
-                        return "You're helluva armored bitch! Can you chill?"
+                        return "You're ALREADY armored! Can you chill?"
                 elif item.ty == "invisibility_potion":
                     if not self.invisibility:
                         self.invisibility += item.ch
                         self.inv.pop_item(self.inv.chosen_item)
                         return f"You'll become invisible for next {item.ch} moves"
                     else:
-                        return "You're about to get overdosed bitch! Chill"
+                        return "You're about to get overdosed! Chill"
             case _:
                 return "___"
                     
@@ -277,7 +277,7 @@ class Interface:
                 lines.append(f"│{' ' * (self.width - 2)}│")
         lines.append(f"└{'─' * (self.width - 2)}┘")
         lines.append(f"┌{'─' * (self.width - 2)}┐")
-        lines.append(f"│{"MEGA COOL INVETORY TYPE SHI~":^{self.width - 2}}│")
+        lines.append(f"│{"INVENTORY":^{self.width - 2}}│")
         lines.append(f"└{'─' * (self.width - 2)}┘")
         if not(inventory.inv):
             lines.append(f"│{"Empty... you're cooked by now":^{self.width - 2}}│")
