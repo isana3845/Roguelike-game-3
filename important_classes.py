@@ -39,7 +39,7 @@ class Inventory:
             time.sleep(5)
         
     def change_item(self, d = 0):
-        if self.order + d not in [-1, len(self.inv)]:
+        if -1 < self.order + d <= len(self.inv) - 1:
             self.order += d
 
     def __call__(self):
@@ -80,6 +80,7 @@ class Player:
         self.inv = inv
         self.state = "living"
         self.invisibility = 0
+        self.weapon = Item("Sword", "weapon", 5)
 
     def move(self, direction: Vector2):
         self.position += direction
@@ -89,14 +90,15 @@ class Player:
     def player_inventory(self, act):
         match act:
             case "a":
-                self.inv.order -= 1
+                self.inv.change_item(-1)
             case "d":
-                self.inv.order += 1
+                self.inv.change_item(1)
             case "x":
                 self.inv.pop_item(self.inv.chosen_item)
             case "e":
                 item = self.inv.inv[self.inv.chosen_item][0]
                 if item.ty == "weapon":
+                    self.weapon = item
                     return f"You equiped {item.title}"
                 elif item.ty == "healing":
                     if self.health < self.max_health:
@@ -135,10 +137,9 @@ class Player:
         message = ""
 
         if self.inv and self.inv.inv:
-            item = self.inv.inv[self.inv.chosen_item][0]
-            if item.ty == "weapon":
-                weapon_damage = int(item.ch)  # Явно преобразуем в int
-                message = f"You attack with {item.title} for {weapon_damage} damage!"
+            if self.weapon:
+                weapon_damage = int(self.weapon.ch)  # Явно преобразуем в int
+                message = f"You attack with {self.weapon.title} for {weapon_damage} damage!"
             else:
                 message = f"You attack for {weapon_damage} damage!"
         else:
@@ -159,9 +160,9 @@ class Enemy(Player):
         super().__init__(coords, health, max_health, armor, max_armor)
         self.enemy_type = enemy_type  # Переименуем, чтобы не конфликтовать с type()
         self.inv = Inventory()
+        self.weapon = Item("Sword", "weapon", 2)
+        self.inv.add_item(self.weapon)
         self.path = []
-        self.inv.add_item(Item("Sword", "weapon", 2))
-        self.inv.chosen_item = "sword"
     
     def __repr__(self):
         return f"Enemy(pos={self.position}, hp={self.health}, type={self.enemy_type})"

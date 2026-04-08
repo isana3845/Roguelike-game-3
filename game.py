@@ -10,7 +10,7 @@ import os
 map_height = randint(2, 5)
 map_width = randint(2, 4)
 
-items_to_choose = [Item("Golden sword", "weapon", 10), Item("Apple", "healing", 10), Item("Potion", "invisibility_potion", 20), Item("Iron chest", "armor", 10)]
+items_to_choose = [Item("Golden sword", "weapon", 10), Item("Apple", "healing", 5), Item("Potion", "invisibility_potion", 20), Item("Iron chest", "armor", 5)]
 items = []
 
 for i in range(map_height*map_width - 2):
