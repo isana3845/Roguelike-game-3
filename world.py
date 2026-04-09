@@ -204,7 +204,7 @@ class Map:
                                 row[x] = '\033[91mE\033[0m'
                             elif is_item:
                                 # Отображаем предмет
-                                row[x] = "🧰"
+                                row[x] = '\033[91mΠ\033[0m'
     
                         line.append(''.join(row))
                     else:

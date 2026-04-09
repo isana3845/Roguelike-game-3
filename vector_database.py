@@ -16,7 +16,7 @@ class Vector2:
         absolute = abs(self)
         self.x /= absolute
         self.y /= absolute
-        self.z /= absolute
+        
         return Vector2(self.x / absolute, self.y / absolute)
 
     def __contains__(self, item):
