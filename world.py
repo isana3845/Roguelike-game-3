@@ -2,6 +2,7 @@ from random import choice, randint, shuffle
 from vector_database import Vector2
 from important_classes import Player, Interface, Enemy, Item
 
+
 class Map:
     def __init__(self, room_height=9, room_width=20, map_height=3, map_width=3):
         self.room_height = room_height

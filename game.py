@@ -7,6 +7,7 @@ from vector_database import Vector2
 import keyboard
 import os
 
+
 map_height = randint(2, 5)
 map_width = randint(2, 4)
 

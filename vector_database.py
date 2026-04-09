@@ -1,8 +1,4 @@
 import sqlite3
-import os #👀
-import keyboard
-import time
-
 
 
 class Vector2:
