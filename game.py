@@ -11,6 +11,7 @@ import os
 map_height = randint(2, 5)
 map_width = randint(2, 4)
 
+
 items_to_choose = [Item("Golden sword", "weapon", 10), Item("Apple", "healing", 5), Item("Potion", "invisibility_potion", 20), Item("Iron chest", "armor", 5)]
 items = []
 
@@ -107,7 +108,9 @@ while True and player.health > 0:
                 
                 if ent:
                     game_map.set_entity(ent[0], x, y, randint(-2, 2), randint(-2, 2))
+                    ent[0].weapon.ch += 1
                     ent = ent[1:]
+                    
 
                 if new_items_data and [x, y] != [exit_x, exit_y]:
                     item = new_items_data.pop(0)
