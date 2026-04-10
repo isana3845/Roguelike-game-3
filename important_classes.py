@@ -19,12 +19,15 @@ class Inventory:
         self.inv = {}
         self.order = 0
         self.chosen_item = None
+        self.length = 0
     
+
     def add_item(self, *items: tuple[Item]):
         for item in items:
             if item.title.lower() not in self.inv:
                 self.inv[item.title.lower()] = [item, 0]
             self.inv[item.title.lower()][1] += 1
+            self.length += 1
     
     def pop_item(self, *items: tuple[Item]):
         try:

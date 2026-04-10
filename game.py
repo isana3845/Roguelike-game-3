@@ -108,7 +108,7 @@ while True and player.health > 0:
                 
                 if ent:
                     game_map.set_entity(ent[0], x, y, randint(-2, 2), randint(-2, 2))
-                    ent[0].weapon.ch += 1
+                    ent[0].weapon.ch += interface.level // 5
                     ent = ent[1:]
                     
 
@@ -201,9 +201,13 @@ while True and player.health > 0:
         # Проверяем, есть ли предмет на позиции игрока
         for item in items[:]:  # Используем срез для безопасного удаления
             if item.position == player.position:
-                inventory.add_item(item)
-                interface.add_event(f"Вы подобрали {item.title}!")
-                items.remove(item)
+                if inventory.length < 15:
+                    inventory.add_item(item)
+                    interface.add_event(f"Вы подобрали {item.title}!")
+                    items.remove(item)
+                else:
+                    print("Cant carry anymore!")
+                    time.sleep(1)
                 break
 
     # Двигаем врагов ТОЛЬКО если игрок сделал ход
