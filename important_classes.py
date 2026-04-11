@@ -36,6 +36,7 @@ class Inventory:
                 if not self.inv[item.lower()][1]:
                     if self.order > 0:
                         self.order -= 1
+                    self.length -= 1
                     self.inv.pop(item.lower())
         except KeyError:
             print(f"There is no such item as {item}")
