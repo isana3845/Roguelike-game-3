@@ -85,11 +85,13 @@ class Player:
         self.state = "living"
         self.invisibility = 0
         self.weapon = Item("Sword", "weapon", 5)
+        self.state = "chilling"
 
     def move(self, direction: Vector2):
-        self.position += direction
-        if self.invisibility:
-            self.invisibility -= 1
+        if self.state == "chilling":
+            self.position += direction
+            if self.invisibility:
+                self.invisibility -= 1
 
     def player_inventory(self, act):
         match act:
@@ -148,6 +150,8 @@ class Player:
                 message = f"You attack for {weapon_damage} damage!"
         else:
             message = f"You attack for {weapon_damage} damage!"
+        
+        self.state = "attack"
         
         if target.armor > 0:
             target.armor -= weapon_damage

@@ -166,10 +166,12 @@ while True and player.health > 0:
                     
                     if nearest:
                         print(f"Attacking enemy at distance {min_distance}")
+                        player.state = "attack"
                         interface.add_event(player.attack(nearest))
                         nearest.attack(player)
 
                         if nearest.health <= 0:
+                            player.state = "chilling"
                             interface.add_event("Enemy died!")
                             entities.remove(nearest)
                     else:
@@ -215,6 +217,7 @@ while True and player.health > 0:
         occupied = []
         for enemy in entities:
             if enemy.position == player.position:
+                player.state = "attack"
                 enemy.attack(player)
 
             if abs(enemy.position - player.position) <= min(game_map.room_height, game_map.room_width)/2:
