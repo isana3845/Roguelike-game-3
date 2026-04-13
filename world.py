@@ -81,8 +81,24 @@ class Map:
                 self.map[b].add(a)
 
 
+    def generate_global_map_from_connections(self, connections, exit_x=None, exit_y=None):
+        area = self.map_height * self.map_width
+        self.map = {i: set() for i in range(1, area + 1)}
+
+        for room_from, room_to in connections:
+            self.map[room_from].add(room_to)
+            self.map[room_to].add(room_from)
+
+        return self.build_rooms(exit_x, exit_y)
+
+
     def generate_global_map(self, exit_x=None, exit_y=None):
         self.generate_map()
+        return self.build_rooms(exit_x, exit_y)
+
+
+    def build_rooms(self, exit_x=None, exit_y=None):
+        self.rooms = []
         shtuka = self.map
 
         for y in range(self.map_height):

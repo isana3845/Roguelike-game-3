@@ -1,8 +1,104 @@
-from vector_database import Vector2
+from vector_database import Vector2, SaveManager
 import keyboard
 import time
+import os
 
 
+class MainMenu:
+    def __init__(self):
+        self.options = ["Начать игру", "Загрузить игру", "Обучение", "Настройки", "Выйти из игры"]
+        self.selected = 0
+
+
+    def cool_title(self):
+        print('\033[95m' + '''
+                    ╔════════════════════════════════════════════════════════════════════╗
+                    ║                                                                    ║
+                    ║   ███████╗██╗    ██╗    ███████╗██╗    ██╗    ███████╗██╗    ██╗   ║
+                    ║   ██╔════╝██║    ██║    ██╔════╝██║    ██║    ██╔════╝██║    ██║   ║
+                    ║   █████╗  ██║ █╗ ██║    █████╗  ██║ █╗ ██║    █████╗  ██║ █╗ ██║   ║
+                    ║   ██╔══╝  ██║███╗██║    ██╔══╝  ██║███╗██║    ██╔══╝  ██║███╗██║   ║
+                    ║   ███████╗╚███╔███╔╝    ███████╗╚███╔███╔╝    ███████╗╚███╔███╔╝   ║
+                    ║   ╚══════╝ ╚══╝╚══╝     ╚══════╝ ╚══╝╚══╝     ╚══════╝ ╚══╝╚══╝    ║
+                    ║                                                                    ║
+                    ║             ██████╗  ██████╗  ██████╗ ██╗   ██╗███████╗            ║
+                    ║             ██╔══██╗██╔═══██╗██╔════╝ ██║   ██║██╔════╝            ║
+                    ║             ██████╔╝██║   ██║██║  ███╗██║   ██║█████╗              ║
+                    ║             ██╔══██╗██║   ██║██║   ██║██║   ██║██╔══╝              ║
+                    ║             ██║  ██║╚██████╔╝╚██████╔╝╚██████╔╝███████╗            ║
+                    ║             ╚═╝  ╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚══════╝            ║
+                    ║                                                                    ║
+                    ╚════════════════════════════════════════════════════════════════════╝
+        ''' + '\033[0m' + '\n\n')
+        
+    def draw_menu(self):
+        os.system("cls")
+        self.cool_title()
+
+        for i, option in enumerate(self.options):
+            if i == self.selected:
+                print(f"{f'\033[92m▶ {option} ◀\033[0m':^{119}}")
+            else:
+                print(f"{f'{option}':^{110}}")
+    
+
+    def run(self):
+        while True:
+            self.draw_menu()
+            event = keyboard.read_event()
+
+            if event.event_type == keyboard.KEY_DOWN:
+                match event.name.lower():
+                    case 'w' | 'ц':
+                        self.selected = (self.selected - 1) % len(self.options)
+                    case 's' | 'ы':
+                        self.selected = (self.selected + 1) % len(self.options)
+                    case 'enter' | 'space':
+                        if self.selected == 0:
+                            return "new"
+                        if self.selected == 1:
+                            return "load"
+                        if self.selected == 4:
+                            return False
+
+
+class PauseMenu:
+    def __init__(self):
+        self.options = ["Продолжить", "Сохранить игру", "Загрузить игру", "Выйти в главное меню"]
+        self.selected = 0
+
+    def draw(self):
+        os.system("cls")
+        print('\033[95m' + '''
+                    ╔═══════════════════════════════════════════════╗
+                    ║                                               ║
+                    ║   ██████╗  █████╗ ██╗   ██╗███████╗███████╗   ║
+                    ║   ██╔══██╗██╔══██╗██║   ██║██╔════╝██╔════╝   ║
+                    ║   ██████╔╝███████║██║   ██║███████╗█████╗     ║
+                    ║   ██╔═══╝ ██╔══██║██║   ██║╚════██║██╔══╝     ║
+                    ║   ██║     ██║  ██║╚██████╔╝███████║███████╗   ║
+                    ║   ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝   ║
+                    ║                                               ║
+                    ╚═══════════════════════════════════════════════╝
+        ''' + '\033[0m' + '\n\n')
+        for i, option in enumerate(self.options):
+            if i == self.selected:
+                print(f"{f'\033[92m▶ {option} ◀\033[0m':^60}")
+            else:
+                print(f"{f'{option}':^60}")
+        print("\nW/S - навигация | Enter - выбор | ESC - продолжить")
+
+    def run(self):
+        while True:
+            self.draw()
+            event = keyboard.read_event()
+            if event.event_type == keyboard.KEY_DOWN:
+                match event.name.lower():
+                    case 'w' | 'ц': self.selected = (self.selected - 1) % len(self.options)
+                    case 's' | 'ы': self.selected = (self.selected + 1) % len(self.options)
+                    case 'enter' | 'space': return self.selected + 1  # 1=продолжить, 2=сохранить, 3=загрузить, 4=выйти
+                    case 'esc': return None
+        
 class Item:
     def __init__(self, title, ty, ch, icon = "^", coords: Vector2 = Vector2(0, 0)):
         self.title = title
