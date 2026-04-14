@@ -1,11 +1,11 @@
-from random import choice, shuffle, randint
+from random import choice, randint
 import time
-import copy
 from important_classes import Player, Inventory, Interface, Item, Enemy, MainMenu, PauseMenu
 from world import Map
 from vector_database import Vector2, SaveManager
 import keyboard
 import os
+
 
 save_manager = SaveManager()
 
@@ -103,7 +103,9 @@ def start_game(load_data=None):
             exit_x, exit_y = randint(0, map_width-1), randint(0, map_height-1)
 
         rooms = game_map.generate_global_map(exit_x, exit_y)
-        player = Player(Vector2(0, 0), 16, 20, 2, 10, Inventory())
+        inv = Inventory()
+        inv.add_item(Item("Sword", "weapon", 5), Item("shlyapka", "armor", 5), Item("apple", "healing", 5), Item("apple", "healing", 5), Item("apple", "healing", 5))
+        player = Player(Vector2(0, 0), 16, 20, 2, 10, inv)
         interface = Interface(player)
         game_map.set_entity(player, start_x, start_y)
 
@@ -137,17 +139,40 @@ def start_game(load_data=None):
             interface.level += 1
             map_height, map_width = randint(2, 5), randint(2, 4)
             game_map = Map(map_height=map_height, map_width=map_width)
+
+            entities = [Enemy(Vector2(0, 0), 20, 20, 2, 20) for i in range(map_height*map_width - 4)]
+            ent = entities.copy()
+            new_items_data = [choice(items_to_choose) for i in range(map_height*map_width)]
+            new_items = []
+
             start_x, start_y = randint(0, map_width-1), randint(0, map_height-1)
             exit_x, exit_y = randint(0, map_width-1), randint(0, map_height-1)
 
             while exit_x == start_x and exit_y == start_y:
                 exit_x, exit_y = randint(0, map_width-1), randint(0, map_height-1)
 
+            for y in range(game_map.map_height):
+                for x in range(game_map.map_width):
+                    if [x, y] == [start_x, start_y]:
+                        continue
+                    
+                    if ent:
+                        game_map.set_entity(ent[0], x, y, randint(-2, 2), randint(-2, 2))
+                        ent[0].weapon.ch += interface.level // 5
+                        ent = ent[1:]
+
+                    if new_items_data and [x, y] != [exit_x, exit_y]:
+                        item = new_items_data.pop(0)
+                        x_offset = randint(-game_map.room_width//4, game_map.room_width//4)
+                        y_offset = randint(-game_map.room_height//4, game_map.room_height//4)
+                        game_map.set_entity(item, x, y, x_offset, y_offset)
+                        new_items.append(item)
+
+            items = new_items  # Обновляем список предметов
+
             rooms = game_map.generate_global_map(exit_x, exit_y)
             game_map.visited_rooms.clear()
             game_map.set_entity(player, start_x, start_y)
-            entities = [Enemy(Vector2(0, 0), 20, 20, 2, 20) for _ in range(map_height * map_width - 4)]
-            items = [choice([Item("Golden sword", "weapon", 10), Item("Apple", "healing", 5)]) for _ in range(map_height*map_width)]
             player_has_moved = False
             continue
 
@@ -175,9 +200,10 @@ def start_game(load_data=None):
                         interface.add_event(player.attack(nearest))
                         nearest.attack(player)
                         if nearest.health <= 0:
-                            interface.add_event("Враг повержен!"); entities.remove(nearest)
-                    else: interface.add_event("Нет врагов рядом!")
-                    time.sleep(0.5)
+                            interface.add_event("Враг повержен!")
+                            entities.remove(nearest)
+                    else:
+                        interface.add_event("Нет врагов рядом!")
                 case 'esc':
                     result = handle_pause(player, game_map, items, entities, interface, map_height, map_width, start_x, start_y, exit_x, exit_y, rooms)
                     if result == "quit":
@@ -185,16 +211,18 @@ def start_game(load_data=None):
                     if isinstance(result, dict):
                         (player, game_map, rooms, items, entities, interface,
                          map_height, map_width, start_x, start_y, exit_x, exit_y) = restore_game_state(result)
-                        print("📂 Игра загружена!"); time.sleep(1)
+                        print("📂 Игра загружена!")
+                        time.sleep(1)
                     player_has_moved = False
                 case 'i' | 'ш' | 'tab':
                     while True:
                         os.system("cls")
                         player.inv()
                         inv_event = keyboard.read_event()
-                        if inv_event.event_type == keyboard.KEY_DOWN and inv_event.name == "esc":
-                            break
-                        player.player_inventory(inv_event.name)
+                        if inv_event.event_type == keyboard.KEY_DOWN:
+                            if inv_event.name == "esc":
+                                break
+                            player.player_inventory(inv_event.name)
                     player_has_moved = False
 
         if player_has_moved:
